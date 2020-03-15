@@ -34,28 +34,28 @@ being built using Makefiles.
 
 For the ESP32 I use:
 
-    * [Espressiv SDK](https://readthedocs.com/projects/espressif-esp-idf/)
-    * [Arduino Core for ESP32](https://github.com/espressif/arduino-esp32/)
-    * [esp-idf-template](https://github.com/espressif/esp-idf-template)
+* [Espressiv SDK](https://readthedocs.com/projects/espressif-esp-idf/)
+* [Arduino Core for ESP32](https://github.com/espressif/arduino-esp32/)
+* [esp-idf-template](https://github.com/espressif/esp-idf-template)
     
 For the Attiny841 I use:
 
-    * [Arduino Makefile](https://github.com/sudar/Arduino-Makefile)
-    * [ATTiny Core](https://github.com/SpenceKonde/ATTinyCore)
+* [Arduino Makefile](https://github.com/sudar/Arduino-Makefile)
+* [ATTiny Core](https://github.com/SpenceKonde/ATTinyCore)
 
 # Libraries
 
 I use the following libraries:
 
-    * [RF Transmitter](https://github.com/zeitgeist87/RFTransmitter)
-    * [Tiny BME280 Library](https://github.com/fabyte/Tiny_BME280_Arduino_Library)
-    * [GxEPD ePaper library](https://github.com/ZinggJM/GxEPD)
-    * original Arduino libraries: SPE, GFX, Wire
+* [RF Transmitter](https://github.com/zeitgeist87/RFTransmitter)
+* [Tiny BME280 Library](https://github.com/fabyte/Tiny_BME280_Arduino_Library)
+* [GxEPD ePaper library](https://github.com/ZinggJM/GxEPD)
+* original Arduino libraries: SPE, GFX, Wire
     
 I wrote the following libraries myself:
 
-    * [ESP Pin Change Interrupt Handler](mainuinit/ESPPinChangeInterruptHandler/) [ported to ESP32](https://github.com/zeitgeist87/RFReceiver)
-    * [Attiny841 Sleep Mode](sensor/841sleep.h)
-    * [Attiny841 read VCC](sensor/841vcc.h)
-    * [Wire transfer data conversion](sensor/data2wire.h)
+* [ESP Pin Change Interrupt Handler](mainuinit/ESPPinChangeInterruptHandler/) [ported to ESP32](https://github.com/zeitgeist87/RFReceiver)
+* [Attiny841 Sleep Mode](sensor/841sleep.h)
+* [Attiny841 read VCC](sensor/841vcc.h)
+* [Wire transfer data conversion](sensor/data2wire.h)
     
