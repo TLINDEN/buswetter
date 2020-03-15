@@ -37,11 +37,17 @@ For the ESP32 I use:
 * [Espressiv SDK](https://readthedocs.com/projects/espressif-esp-idf/)
 * [Arduino Core for ESP32](https://github.com/espressif/arduino-esp32/)
 * [esp-idf-template](https://github.com/espressif/esp-idf-template)
-    
+
 For the Attiny841 I use:
 
 * [Arduino Makefile](https://github.com/sudar/Arduino-Makefile)
 * [ATTiny Core](https://github.com/SpenceKonde/ATTinyCore)
+* [AvrDude 6.3](https://www.nongnu.org/avrdude/)
+* [AVR Libc 2.0.0](http://www.nongnu.org/avr-libc/)
+* [GNU binutils for AVR](https://www.gnu.org/software/binutils/)
+* [GCC 8.3 for AVR](http://gcc.gnu.org/)
+* [see also: install AVR toolchain](https://www.nongnu.org/avr-libc/user-manual/install_tools.html)
+
 
 # Libraries
 
