@@ -13,3 +13,12 @@ It features:
 * Runs most of the time in power save sleep mode
 * measures Vcc, temperature, humidity and pressure
 * sends the measurements via 433 MHz radio to the ESP32 module
+
+
+# Calculations
+## MAX6301 Watchdog IC
+
+    Vrst = 2.69
+    R2   =  940k (470k + 470k)
+    R1   = 1220k (1M + 220k)
+
