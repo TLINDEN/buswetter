@@ -1,10 +1,12 @@
 /* -*-c++-*-
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
-  This example code is in the public domain.
- */
 
-/*
+   Attiny841 based sensor module,  measures Vcc, Temperature, Pressure
+   and  Humidity, sends  it to  the weather  display station,  goes to
+   sleep, repeat.
+
+   We're using a Bosch BME280 sensor module and a MAX6301 monitoring IC.
+
+  Pins:
   ./hardware/ATTinyCore/avr/cores/tinymodern/core_pins.h
   Caution: reverse Pinout: PA3 => Pin 3
 
@@ -19,6 +21,16 @@ SDO/MISO PA5          PA6 SDI/MOSI
          PA0          PB0
          GND          VCC
                usb
+
+  Bare Attiny841 Pinout, pin1 upper left corner, Arduino PIN numbers outside
+
+            VCC 1 o      14 GND
+10          PB0 2        13 PA0              0
+ 9          PB1 3        12 PA1 TX0          1
+11      RST PB3 4        11 PA2 RX0          2
+ 8          PB2 5        10 PA3              3
+ 7          PA7 6         9 PA4 SCK/SCL/RX1  4
+ 6 SDA/MOSI PA6 7         8 PA5 MISO/TX1    5
 
   Bosch BME280 Breakout from above pin header left:
 
@@ -44,14 +56,23 @@ SDO/MISO PA5          PA6 SDI/MOSI
 #include <RFTransmitter.h>
 
 #define NODE_ID       1
-#define OUTPUT_PIN    7
-#define LED           2 //LED_BUILTIN  // PORTB2
+#define RF_OUTPUT     7 // RF Out
 #define CS            3
 #define DELAY         5000
+
+// internal sleep repeats
 #define WDTREPEATS    3
 
+// external watchdog
+#define WDI           0  // watchdog input pin, send pulse
+#define WDS           1  // watchdog mode pin, set high during sleep
+
+#ifdef DEV
+  #define LED           2 // LED_BUILTIN  // PORTB2
+#endif
+
 static tiny::BME280 sensor;
-RFTransmitter transmitter(OUTPUT_PIN, NODE_ID);
+RFTransmitter transmitter(RF_OUTPUT, NODE_ID);
 const long InternalReferenceVoltage = 1083L;
 
 #define SET_OUTPUT(pin) DDRB  |=  (1 << pin)
@@ -65,6 +86,15 @@ typedef struct _measurements_t {
   uint16_t vcc;
 } measurements_t;
 
+
+void wdi_pulse() {
+  // send a short pulse to max6301 WDI pin to signal we're alive
+  SET_HIGH(WDI);
+  delay_ns(30);
+  SET_LOW(WDI);
+}
+
+#ifdef DEV
 void print_asufloat(uint32_t val, uint16_t factor) {
   Serial.print(val / factor);
   Serial.print(".");
@@ -76,12 +106,15 @@ void print_asifloat(int32_t val, uint16_t factor) {
   Serial.print(".");
   Serial.print(val % factor);
 }
+#endif
 
-void print_measurements() {
+void measure() {
   measurements_t ms;
   byte sendms[sizeof(measurements_t)];
-  
+
+#ifdef DEV  
   SET_LOW(LED);
+#ENDIF
 
   ms.temp     = sensor.readFixedTempC();
   ms.humidity = sensor.readFixedHumidity();
@@ -91,7 +124,8 @@ void print_measurements() {
   adc_start();
   ms.vcc = adc_get_adcw();
   adc_disable();
-  
+
+#ifdef DEV
   Serial.print("Voltage: ");
   Serial.println(ms.vcc);
 
@@ -106,6 +140,7 @@ void print_measurements() {
   Serial.print("        Humidity: ");
   print_asufloat(ms.humidity, 1000);
   Serial.println(" %");
+#endif
 
   data32_to_wire(ms.pres,     &sendms[0]);
   data32_to_wire(ms.humidity, &sendms[sizeof(ms.humidity) + 1]);
@@ -114,7 +149,9 @@ void print_measurements() {
   
   transmitter.send((byte *)sendms, sizeof(sendms));
 
+#ifdef DEV
   SET_HIGH(LED);
+#endif
 }
 
 void halt() {
@@ -123,17 +160,27 @@ void halt() {
 
 
 void setup() {
-  SET_OUTPUT(LED);
+  // initialize max6301
+  SET_OUTPUT(WDI);
+  SET_OUTPUT(WDS);
+  SET_LOW(WDI);
+  SET_LOW(WDS);
 
+#ifdef DEV
+  SET_OUTPUT(LED);
   Serial.begin(115200);
   Serial.println("init");
+#endif
 
   delay(4000);
 
   adc_setup_vcc_measurement();
+  wdi_pulse();
 
   if(sensor.beginSPI(CS) == false) {
+#ifdef DEV
     Serial.println("Sensor BME280 connect failed, check wiring!");
+#endif
     halt();
   }
 
@@ -142,15 +189,38 @@ void setup() {
 
 void loop() {
   uint8_t i;
-  print_measurements();
+
+  // signal alive
+  wdi_pulse();
+
+  // do the work
+  measure();
+
+  // go to sleep
   for(i=0; i<WDTREPEATS; i++) {
     delay(DELAY);
+#ifdef DEV
     Serial.print("----- ENTER SLEEP: ");
     Serial.println(i);
+#endif
+
+    // set WDS high which multiplies WDTIMEOUT by 500
+    SET_HIGH(WDS);
+
+    // actual sleep
     sleep_enter();
+
+    // awake, set WDS low for configured WDTIMEOUT
+    SET_LOW(WDS);
+
+#ifdef DEV
     Serial.println("----- LEAVE SLEEP");
+#endif
   }
+
+#ifdef DEV
   Serial.println("-- DONE");
+#endif
 }
 
 sleep_vect();
